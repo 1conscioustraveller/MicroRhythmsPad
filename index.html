@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draggable Oval on Android Screen</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2D004F 0%, #4B0082 100%);
+            color: white;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        
+        .phone-container {
+            position: relative;
+        }
+        
+        .android-phone {
+            width: 360px;
+            height: 740px;
+            background: #111;
+            border-radius: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 0 4px #333, 0 20px 50px rgba(0, 0, 0, 0.6);
+        }
+        
+        .screen {
+            position: absolute;
+            top: 20px;
+            left: 10px;
+            width: 340px;
+            height: 700px;
+            background: #000;
+            overflow: hidden;
+        }
+        
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 20px;
+            background: #111;
+            border-radius: 0 0 10px 10px;
+            z-index: 10;
+        }
+        
+        .power-button {
+            position: absolute;
+            right: -4px;
+            top: 120px;
+            width: 4px;
+            height: 60px;
+            background: #444;
+            border-radius: 2px;
+        }
+        
+        .volume-buttons {
+            position: absolute;
+            left: -4px;
+            top: 120px;
+            width: 4px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .volume-up, .volume-down {
+            width: 4px;
+            height: 30px;
+            background: #444;
+            border-radius: 2px;
+        }
+        
+        .home-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 4px;
+        }
+        
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 15px;
+            align-items: center;
+            font-size: 12px;
+            z-index: 5;
+        }
+        
+        .time {
+            font-weight: bold;
+        }
+        
+        .status-icons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-icons span {
+            font-size: 14px;
+        }
+        
+        .oval-button {
+            width: 100px;
+            height: 60px;
+            background: linear-gradient(145deg, #FF69B4, #FF1493);
+            border-radius: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: grab;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            user-select: none;
+            transition: box-shadow 0.3s, transform 0.2s;
+            z-index: 10;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            touch-action: none;
+        }
+        
+        .oval-button:active {
+            cursor: grabbing;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+            transform: translate(-50%, -50%) scale(0.98);
+        }
+        
+        .info-panel {
+            width: 360px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 105, 180, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #FF69B4;
+            font-size: 24px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .data-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .data-item {
+            background: rgba(255, 105, 180, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .data-label {
+            font-size: 14px;
+            color: #FFB6C1;
+            margin-bottom: 8px;
+        }
+        
+        .data-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF69B4;
+        }
+        
+        .coordinates {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 105, 180, 0.1);
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .reset-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: linear-gradient(to right, #FF69B4, #FF1493);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .reset-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .grid-line {
+            position: absolute;
+            background: rgba(255, 105, 180, 0.1);
+        }
+        
+        .grid-line.x {
+            left: 0;
+            right: 0;
+            height: 1px;
+        }
+        
+        .grid-line.y {
+            top: 0;
+            bottom: 0;
+            width: 1px;
+        }
+        
+        .center-marker {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 105, 180, 0.5);
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .center-marker::before, .center-marker::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 105, 180, 0.3);
+        }
+        
+        .center-marker::before {
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            transform: translateY(-50%);
+        }
+        
+        .center-marker::after {
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="phone-container">
+            <div class="android-phone">
+                <div class="power-button"></div>
+                <div class="volume-buttons">
+                    <div class="volume-up"></div>
+                    <div class="volume-down"></div>
+                </div>
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="time">12:30</div>
+                        <div class="status-icons">
+                            <span>📶</span>
+                            <span>🔋</span>
+                        </div>
+                    </div>
+                    <div class="notch"></div>
+                    <div class="home-indicator"></div>
+                    <div class="center-marker"></div>
+                    
+                    <!-- The draggable oval button -->
+                    <div class="oval-button" id="ovalButton">E5</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <h1>Android Screen Position Tracker</h1>
+            
+            <div class="data-display">
+                <div class="data-item">
+                    <div class="data-label">X Position</div>
+                    <div class="data-value" id="xPos">170</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Y Position</div>
+                    <div class="data-value" id="yPos">350</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Distance from Center</div>
+                    <div class="data-value" id="distance">0</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Angle from Center</div>
+                    <div class="data-value" id="angle">0°</div>
+                </div>
+            </div>
+            
+            <div class="coordinates">
+                Screen Dimensions: 340 × 700 px<br>
+                Center: (170, 350)
+            </div>
+            
+            <div class="instructions">
+                <h3>Instructions</h3>
+                <ul>
+                    <li>Drag the oval button anywhere on the Android screen</li>
+                    <li>Position data will update in real-time</li>
+                    <li>Use the reset button to return the oval to the center</li>
+                </ul>
+            </div>
+            
+            <button class="reset-btn" id="resetBtn">Reset Position</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ovalButton = document.getElementById('ovalButton');
+            const screen = document.querySelector('.screen');
+            const resetBtn = document.getElementById('resetBtn');
+            const xPosElement = document.getElementById('xPos');
+            const yPosElement = document.getElementById('yPos');
+            const distanceElement = document.getElementById('distance');
+            const angleElement = document.getElementById('angle');
+            
+            let isDragging = false;
+            let currentX, currentY;
+            let initialX, initialY;
+            let xOffset = 0, yOffset = 0;
+            
+            // Initialize position at center
+            setPosition(screen.offsetWidth / 2 - ovalButton.offsetWidth / 2, 
+                       screen.offsetHeight / 2 - ovalButton.offsetHeight / 2);
+            updatePositionData();
+            
+            // Add grid lines for better orientation
+            addGridLines();
+            
+            // Mouse events for dragging
+            ovalButton.addEventListener('mousedown', dragStart);
+            document.addEventListener('mouseup', dragEnd);
+            document.addEventListener('mousemove', drag);
+            
+            // Touch events for mobile
+            ovalButton.addEventListener('touchstart', dragStart);
+            document.addEventListener('touchend', dragEnd);
+            document.addEventListener('touchmove', drag);
+            
+            // Reset button event
+            resetBtn.addEventListener('click', resetPosition);
+            
+            function dragStart(e) {
+                e.preventDefault();
+                
+                if (e.type === 'touchstart') {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+                
+                if (e.target === ovalButton) {
+                    isDragging = true;
+                    ovalButton.style.cursor = 'grabbing';
+                }
+            }
+            
+            function dragEnd() {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+                ovalButton.style.cursor = 'grab';
+            }
+            
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    
+                    if (e.type === 'touchmove') {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+                    
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    
+                    setPosition(currentX, currentY);
+                    updatePositionData();
+                }
+            }
+            
+            function setPosition(x, y) {
+                // Constrain the oval within the screen
+                const maxX = screen.offsetWidth - ovalButton.offsetWidth;
+                const maxY = screen.offsetHeight - ovalButton.offsetHeight;
+                
+                x = Math.max(0, Math.min(x, maxX));
+                y = Math.max(0, Math.min(y, maxY));
+                
+                ovalButton.style.left = x + 'px';
+                ovalButton.style.top = y + 'px';
+                
+                currentX = x;
+                currentY = y;
+                xOffset = x;
+                yOffset = y;
+            }
+            
+            function updatePositionData() {
+                // Calculate position relative to center
+                const centerX = screen.offsetWidth / 2 - ovalButton.offsetWidth / 2;
+                const centerY = screen.offsetHeight / 2 - ovalButton.offsetHeight / 2;
+                
+                const relX = currentX - centerX;
+                const relY = centerY - currentY; // Invert Y axis for more intuitive coordinates
+                
+                // Calculate distance from center
+                const distance = Math.sqrt(relX * relX + relY * relY);
+                
+                // Calculate angle from center (in degrees)
+                let angle = Math.atan2(relY, relX) * 180 / Math.PI;
+                if (angle < 0) angle += 360;
+                
+                // Update displayed values
+                xPosElement.textContent = Math.round(currentX + ovalButton.offsetWidth / 2);
+                yPosElement.textContent = Math.round(currentY + ovalButton.offsetHeight / 2);
+                distanceElement.textContent = Math.round(distance);
+                angleElement.textContent = Math.round(angle) + '°';
+            }
+            
+            function resetPosition() {
+                setPosition(screen.offsetWidth / 2 - ovalButton.offsetWidth / 2, 
+                           screen.offsetHeight / 2 - ovalButton.offsetHeight / 2);
+                updatePositionData();
+            }
+            
+            function addGridLines() {
+                // Add horizontal grid lines
+                for (let y = 0; y <= screen.offsetHeight; y += 50) {
+                    const line = document.createElement('div');
+                    line.className = 'grid-line x';
+                    line.style.top = y + 'px';
+                    screen.appendChild(line);
+                }
+                
+                // Add vertical grid lines
+                for (let x = 0; x <= screen.offsetWidth; x += 50) {
+                    const line = document.createElement('div');
+                    line.className = 'grid-line y';
+                    line.style.left = x + 'px';
+                    screen.appendChild(line);
+                }
+            }
+            
+            // Update time in status bar
+            function updateTime() {
+                const now = new Date();
+                const timeElement = document.querySelector('.time');
+                timeElement.textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
+            
+            setInterval(updateTime, 1000);
+            updateTime();
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                // Adjust position to stay within bounds if needed
+                setPosition(currentX, currentY);
+            });
+        });
+    </script>
+</body>
+</html>
